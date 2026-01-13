@@ -5,26 +5,32 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { 
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Search, MoreVertical, Edit, Trash2, Eye } from 'lucide-react';
+import { Plus, Search, MoreVertical, Edit, Trash2, CreditCard } from 'lucide-react';
 import { format } from 'date-fns';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { AddMemberDialog } from '@/components/admin/AddMemberDialog';
+import { EditMemberDialog } from '@/components/admin/EditMemberDialog';
+import { AssignMembershipDialog } from '@/components/admin/AssignMembershipDialog';
 
 interface Member {
   user_id: string;
@@ -47,6 +53,11 @@ export default function AdminMembers() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showAssignDialog, setShowAssignDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<Member | null>(null);
+  const [deletingMember, setDeletingMember] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -115,6 +126,50 @@ export default function AdminMembers() {
       case 'pending': return 'warning';
       case 'frozen': return 'secondary';
       default: return 'secondary';
+    }
+  };
+
+  const handleEdit = (member: Member) => {
+    setSelectedMember(member);
+    setShowEditDialog(true);
+  };
+
+  const handleAssignMembership = (member: Member) => {
+    setSelectedMember(member);
+    setShowAssignDialog(true);
+  };
+
+  const handleDeleteClick = (member: Member) => {
+    setSelectedMember(member);
+    setShowDeleteDialog(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!selectedMember) return;
+
+    setDeletingMember(true);
+    try {
+      // Delete user from auth (this will cascade delete related records)
+      const { error } = await supabase.auth.admin.deleteUser(selectedMember.user_id);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Success',
+        description: 'Member deleted successfully',
+      });
+
+      fetchMembers();
+      setShowDeleteDialog(false);
+      setSelectedMember(null);
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to delete member',
+        variant: 'destructive',
+      });
+    } finally {
+      setDeletingMember(false);
     }
   };
 
@@ -250,15 +305,21 @@ export default function AdminMembers() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem>
-                      <Eye className="w-4 h-4 mr-2" />
-                      View Details
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
+                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => handleEdit(member)}>
                       <Edit className="w-4 h-4 mr-2" />
                       Edit Member
                     </DropdownMenuItem>
-                    <DropdownMenuItem className="text-destructive">
+                    <DropdownMenuItem onClick={() => handleAssignMembership(member)}>
+                      <CreditCard className="w-4 h-4 mr-2" />
+                      Assign Membership
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem 
+                      className="text-destructive"
+                      onClick={() => handleDeleteClick(member)}
+                    >
                       <Trash2 className="w-4 h-4 mr-2" />
                       Delete Member
                     </DropdownMenuItem>
@@ -270,28 +331,51 @@ export default function AdminMembers() {
         )}
       </Card>
 
-      {/* Add Member Dialog (placeholder) */}
-      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add New Member</DialogTitle>
-            <DialogDescription>
-              Create a new member account and assign membership
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <p className="text-sm text-muted-foreground">
-              Add member functionality will be implemented next...
-            </p>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAddDialog(false)}>
-              Cancel
-            </Button>
-            <Button className="bg-gradient-primary">Create Member</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Dialogs */}
+      <AddMemberDialog
+        open={showAddDialog}
+        onOpenChange={setShowAddDialog}
+        onSuccess={fetchMembers}
+      />
+
+      <EditMemberDialog
+        open={showEditDialog}
+        onOpenChange={setShowEditDialog}
+        member={selectedMember}
+        onSuccess={fetchMembers}
+      />
+
+      {selectedMember && (
+        <AssignMembershipDialog
+          open={showAssignDialog}
+          onOpenChange={setShowAssignDialog}
+          userId={selectedMember.user_id}
+          userName={selectedMember.full_name}
+          onSuccess={fetchMembers}
+        />
+      )}
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete {selectedMember?.full_name}'s account and all associated data. 
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              disabled={deletingMember}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deletingMember ? 'Deleting...' : 'Delete'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </motion.div>
   );
 }
