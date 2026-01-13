@@ -18,6 +18,8 @@ export type Database = {
         Row: {
           check_in_time: string | null
           check_out_time: string | null
+          checked_in_by: string | null
+          checked_out_by: string | null
           created_at: string | null
           id: string
           qr_code_scanned: string | null
@@ -26,6 +28,8 @@ export type Database = {
         Insert: {
           check_in_time?: string | null
           check_out_time?: string | null
+          checked_in_by?: string | null
+          checked_out_by?: string | null
           created_at?: string | null
           id?: string
           qr_code_scanned?: string | null
@@ -34,10 +38,51 @@ export type Database = {
         Update: {
           check_in_time?: string | null
           check_out_time?: string | null
+          checked_in_by?: string | null
+          checked_out_by?: string | null
           created_at?: string | null
           id?: string
           qr_code_scanned?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      audit_logs: {
+        Row: {
+          action: string
+          created_at: string | null
+          id: string
+          ip_address: string | null
+          new_values: Json | null
+          old_values: Json | null
+          record_id: string | null
+          table_name: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          id?: string
+          ip_address?: string | null
+          new_values?: Json | null
+          old_values?: Json | null
+          record_id?: string | null
+          table_name?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          id?: string
+          ip_address?: string | null
+          new_values?: Json | null
+          old_values?: Json | null
+          record_id?: string | null
+          table_name?: string | null
+          user_agent?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -135,6 +180,90 @@ export type Database = {
           },
         ]
       }
+      coupons: {
+        Row: {
+          code: string
+          created_at: string | null
+          description: string | null
+          discount_type: string
+          discount_value: number
+          id: string
+          is_active: boolean | null
+          max_uses: number | null
+          updated_at: string | null
+          used_count: number | null
+          valid_from: string
+          valid_until: string
+        }
+        Insert: {
+          code: string
+          created_at?: string | null
+          description?: string | null
+          discount_type: string
+          discount_value: number
+          id?: string
+          is_active?: boolean | null
+          max_uses?: number | null
+          updated_at?: string | null
+          used_count?: number | null
+          valid_from: string
+          valid_until: string
+        }
+        Update: {
+          code?: string
+          created_at?: string | null
+          description?: string | null
+          discount_type?: string
+          discount_value?: number
+          id?: string
+          is_active?: boolean | null
+          max_uses?: number | null
+          updated_at?: string | null
+          used_count?: number | null
+          valid_from?: string
+          valid_until?: string
+        }
+        Relationships: []
+      }
+      membership_history: {
+        Row: {
+          action: string
+          amount: number | null
+          created_at: string | null
+          end_date: string
+          id: string
+          notes: string | null
+          performed_by: string | null
+          plan_id: string
+          start_date: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          amount?: number | null
+          created_at?: string | null
+          end_date: string
+          id?: string
+          notes?: string | null
+          performed_by?: string | null
+          plan_id: string
+          start_date: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          amount?: number | null
+          created_at?: string | null
+          end_date?: string
+          id?: string
+          notes?: string | null
+          performed_by?: string | null
+          plan_id?: string
+          start_date?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       membership_plans: {
         Row: {
           created_at: string | null
@@ -173,44 +302,59 @@ export type Database = {
       }
       memberships: {
         Row: {
+          auto_renew: boolean | null
           created_at: string | null
           end_date: string
           freeze_end_date: string | null
+          freeze_reason: string | null
           freeze_start_date: string | null
           id: string
+          invoice_number: string | null
           notes: string | null
+          payment_status: string | null
           plan_id: string
           qr_code: string | null
           start_date: string
           status: Database["public"]["Enums"]["membership_status"] | null
+          transferred_from: string | null
           updated_at: string | null
           user_id: string
         }
         Insert: {
+          auto_renew?: boolean | null
           created_at?: string | null
           end_date: string
           freeze_end_date?: string | null
+          freeze_reason?: string | null
           freeze_start_date?: string | null
           id?: string
+          invoice_number?: string | null
           notes?: string | null
+          payment_status?: string | null
           plan_id: string
           qr_code?: string | null
           start_date: string
           status?: Database["public"]["Enums"]["membership_status"] | null
+          transferred_from?: string | null
           updated_at?: string | null
           user_id: string
         }
         Update: {
+          auto_renew?: boolean | null
           created_at?: string | null
           end_date?: string
           freeze_end_date?: string | null
+          freeze_reason?: string | null
           freeze_start_date?: string | null
           id?: string
+          invoice_number?: string | null
           notes?: string | null
+          payment_status?: string | null
           plan_id?: string
           qr_code?: string | null
           start_date?: string
           status?: Database["public"]["Enums"]["membership_status"] | null
+          transferred_from?: string | null
           updated_at?: string | null
           user_id?: string
         }
@@ -222,6 +366,13 @@ export type Database = {
             referencedRelation: "membership_plans"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "memberships_transferred_from_fkey"
+            columns: ["transferred_from"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
       notifications: {
@@ -231,6 +382,8 @@ export type Database = {
           is_read: boolean | null
           link: string | null
           message: string
+          priority: string | null
+          read_at: string | null
           title: string
           type: Database["public"]["Enums"]["notification_type"]
           user_id: string
@@ -241,6 +394,8 @@ export type Database = {
           is_read?: boolean | null
           link?: string | null
           message: string
+          priority?: string | null
+          read_at?: string | null
           title: string
           type: Database["public"]["Enums"]["notification_type"]
           user_id: string
@@ -251,6 +406,8 @@ export type Database = {
           is_read?: boolean | null
           link?: string | null
           message?: string
+          priority?: string | null
+          read_at?: string | null
           title?: string
           type?: Database["public"]["Enums"]["notification_type"]
           user_id?: string
@@ -260,11 +417,13 @@ export type Database = {
       payments: {
         Row: {
           amount: number
+          coupon_id: string | null
           created_at: string | null
           created_by: string | null
           discount_amount: number | null
           id: string
           invoice_number: string | null
+          invoice_path: string | null
           notes: string | null
           paid_at: string | null
           payment_method: Database["public"]["Enums"]["payment_method"]
@@ -275,11 +434,13 @@ export type Database = {
         }
         Insert: {
           amount: number
+          coupon_id?: string | null
           created_at?: string | null
           created_by?: string | null
           discount_amount?: number | null
           id?: string
           invoice_number?: string | null
+          invoice_path?: string | null
           notes?: string | null
           paid_at?: string | null
           payment_method: Database["public"]["Enums"]["payment_method"]
@@ -290,11 +451,13 @@ export type Database = {
         }
         Update: {
           amount?: number
+          coupon_id?: string | null
           created_at?: string | null
           created_by?: string | null
           discount_amount?: number | null
           id?: string
           invoice_number?: string | null
+          invoice_path?: string | null
           notes?: string | null
           paid_at?: string | null
           payment_method?: Database["public"]["Enums"]["payment_method"]
@@ -303,7 +466,15 @@ export type Database = {
           reference_id?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "payments_coupon_id_fkey"
+            columns: ["coupon_id"]
+            isOneToOne: false
+            referencedRelation: "coupons"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       products: {
         Row: {
@@ -313,11 +484,14 @@ export type Database = {
           id: string
           image_url: string | null
           is_active: boolean | null
+          last_restocked: string | null
           low_stock_alert: number | null
           name: string
           price: number
+          reorder_level: number | null
           sku: string | null
           stock_quantity: number | null
+          supplier: string | null
           updated_at: string | null
         }
         Insert: {
@@ -327,11 +501,14 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_active?: boolean | null
+          last_restocked?: string | null
           low_stock_alert?: number | null
           name: string
           price: number
+          reorder_level?: number | null
           sku?: string | null
           stock_quantity?: number | null
+          supplier?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -341,11 +518,14 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_active?: boolean | null
+          last_restocked?: string | null
           low_stock_alert?: number | null
           name?: string
           price?: number
+          reorder_level?: number | null
           sku?: string | null
           stock_quantity?: number | null
+          supplier?: string | null
           updated_at?: string | null
         }
         Relationships: []
@@ -354,42 +534,57 @@ export type Database = {
         Row: {
           address: string | null
           avatar_url: string | null
+          blood_group: string | null
           created_at: string | null
           date_of_birth: string | null
           email: string
           emergency_contact: string | null
           emergency_phone: string | null
           full_name: string
+          gender: string | null
           id: string
+          joined_date: string | null
+          medical_conditions: string | null
           phone: string | null
+          status: string | null
           updated_at: string | null
           user_id: string
         }
         Insert: {
           address?: string | null
           avatar_url?: string | null
+          blood_group?: string | null
           created_at?: string | null
           date_of_birth?: string | null
           email: string
           emergency_contact?: string | null
           emergency_phone?: string | null
           full_name: string
+          gender?: string | null
           id?: string
+          joined_date?: string | null
+          medical_conditions?: string | null
           phone?: string | null
+          status?: string | null
           updated_at?: string | null
           user_id: string
         }
         Update: {
           address?: string | null
           avatar_url?: string | null
+          blood_group?: string | null
           created_at?: string | null
           date_of_birth?: string | null
           email?: string
           emergency_contact?: string | null
           emergency_phone?: string | null
           full_name?: string
+          gender?: string | null
           id?: string
+          joined_date?: string | null
+          medical_conditions?: string | null
           phone?: string | null
+          status?: string | null
           updated_at?: string | null
           user_id?: string
         }
@@ -443,6 +638,77 @@ export type Database = {
         }
         Relationships: []
       }
+      sales_transactions: {
+        Row: {
+          customer_name: string | null
+          id: string
+          payment_method: Database["public"]["Enums"]["payment_method"]
+          product_id: string
+          quantity: number
+          sale_date: string | null
+          sold_by: string
+          total_amount: number
+          unit_price: number
+        }
+        Insert: {
+          customer_name?: string | null
+          id?: string
+          payment_method: Database["public"]["Enums"]["payment_method"]
+          product_id: string
+          quantity: number
+          sale_date?: string | null
+          sold_by: string
+          total_amount: number
+          unit_price: number
+        }
+        Update: {
+          customer_name?: string | null
+          id?: string
+          payment_method?: Database["public"]["Enums"]["payment_method"]
+          product_id?: string
+          quantity?: number
+          sale_date?: string | null
+          sold_by?: string
+          total_amount?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_transactions_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      system_settings: {
+        Row: {
+          description: string | null
+          id: string
+          setting_key: string
+          setting_value: Json
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          description?: string | null
+          id?: string
+          setting_key: string
+          setting_value: Json
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          description?: string | null
+          id?: string
+          setting_key?: string
+          setting_value?: Json
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       trainers: {
         Row: {
           availability: Json | null
@@ -482,6 +748,45 @@ export type Database = {
           specialization?: string[] | null
           updated_at?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      training_sessions: {
+        Row: {
+          created_at: string | null
+          duration_minutes: number
+          id: string
+          member_id: string
+          notes: string | null
+          session_date: string
+          session_time: string
+          status: string | null
+          trainer_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          duration_minutes: number
+          id?: string
+          member_id: string
+          notes?: string | null
+          session_date: string
+          session_time: string
+          status?: string | null
+          trainer_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          duration_minutes?: number
+          id?: string
+          member_id?: string
+          notes?: string | null
+          session_date?: string
+          session_time?: string
+          status?: string | null
+          trainer_id?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -561,6 +866,24 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_membership_stats: {
+        Args: never
+        Returns: {
+          active_members: number
+          expired_members: number
+          frozen_members: number
+          total_members: number
+        }[]
+      }
+      get_revenue_stats: {
+        Args: { end_date: string; start_date: string }
+        Returns: {
+          membership_revenue: number
+          product_revenue: number
+          total_revenue: number
+          training_revenue: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
