@@ -568,6 +568,26 @@ export type Database = {
         }
         Returns: boolean
       }
+      search_member_for_checkin: {
+        Args: { _search_term: string }
+        Returns: {
+          email: string
+          full_name: string
+          has_active_membership: boolean
+          membership_status: Database["public"]["Enums"]["membership_status"]
+          user_id: string
+        }[]
+      }
+      validate_qr_code: {
+        Args: { _qr_code: string }
+        Returns: {
+          full_name: string
+          is_valid: boolean
+          membership_end_date: string
+          membership_status: Database["public"]["Enums"]["membership_status"]
+          user_id: string
+        }[]
+      }
     }
     Enums: {
       app_role: "admin" | "staff" | "trainer" | "member"
