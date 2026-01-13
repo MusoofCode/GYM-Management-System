@@ -17,6 +17,10 @@ import {
 import { cn } from '@/lib/utils';
 import MemberOverview from './Overview';
 import MemberProfile from './Profile';
+import MemberClasses from './Classes';
+import MemberProgress from './Progress';
+import MemberPayments from './Payments';
+import MemberSettings from './Settings';
 
 const navigationItems = [
   { name: 'Dashboard', href: '/member', icon: LayoutDashboard },
@@ -110,6 +114,10 @@ export default function MemberDashboard() {
           <Routes>
             <Route index element={<MemberOverview />} />
             <Route path="profile" element={<MemberProfile />} />
+            <Route path="classes" element={<MemberClasses />} />
+            <Route path="progress" element={<MemberProgress />} />
+            <Route path="payments" element={<MemberPayments />} />
+            <Route path="settings" element={<MemberSettings />} />
           </Routes>
         </div>
       </main>
