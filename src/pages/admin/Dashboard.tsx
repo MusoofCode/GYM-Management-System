@@ -14,7 +14,11 @@ import {
   X,
   Dumbbell,
   TrendingUp,
-  UserSquare
+  UserSquare,
+  UserCheck,
+  Tag,
+  ShoppingCart,
+  FileText,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import AdminOverview from './Overview';
@@ -23,14 +27,23 @@ import AdminClasses from './Classes';
 import AdminPayments from './Payments';
 import AdminProducts from './Products';
 import AdminSettings from './Settings';
+import AdminAttendance from './Attendance';
+import AdminMembershipPlans from './MembershipPlans';
+import AdminPOS from './POS';
+import AdminCoupons from './Coupons';
+import AdminReports from './Reports';
 
 const navigationItems = [
   { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
   { name: 'Members', href: '/admin/members', icon: Users },
+  { name: 'Attendance', href: '/admin/attendance', icon: UserCheck },
   { name: 'Classes', href: '/admin/classes', icon: Calendar },
   { name: 'Trainers', href: '/admin/trainers', icon: UserSquare },
+  { name: 'Memberships', href: '/admin/membership-plans', icon: FileText },
   { name: 'Payments', href: '/admin/payments', icon: CreditCard },
   { name: 'Products', href: '/admin/products', icon: Package },
+  { name: 'POS', href: '/admin/pos', icon: ShoppingCart },
+  { name: 'Coupons', href: '/admin/coupons', icon: Tag },
   { name: 'Reports', href: '/admin/reports', icon: TrendingUp },
   { name: 'Settings', href: '/admin/settings', icon: Settings },
 ];
@@ -119,9 +132,14 @@ export default function AdminDashboard() {
           <Routes>
             <Route index element={<AdminOverview />} />
             <Route path="members" element={<AdminMembers />} />
+            <Route path="attendance" element={<AdminAttendance />} />
             <Route path="classes" element={<AdminClasses />} />
+            <Route path="membership-plans" element={<AdminMembershipPlans />} />
             <Route path="payments" element={<AdminPayments />} />
             <Route path="products" element={<AdminProducts />} />
+            <Route path="pos" element={<AdminPOS />} />
+            <Route path="coupons" element={<AdminCoupons />} />
+            <Route path="reports" element={<AdminReports />} />
             <Route path="settings" element={<AdminSettings />} />
           </Routes>
         </div>
