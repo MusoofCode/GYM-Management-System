@@ -127,7 +127,7 @@ export default function MemberOverview() {
     >
       <div>
         <h1 className="text-3xl font-bold text-foreground">Welcome Back!</h1>
-        <p className="text-muted-foreground mt-2">Track your fitness journey</p>
+        <p className="text-muted-foreground mt-2">Track your training progress</p>
       </div>
 
       {/* Membership Card */}
@@ -140,7 +140,7 @@ export default function MemberOverview() {
           <div className="flex items-start justify-between">
             <div>
               <Badge className="mb-3 bg-primary-foreground/20 text-primary-foreground">
-                {membership.status.charAt(0).toUpperCase() + membership.status.slice(1)} Membership
+                {membership.status.charAt(0).toUpperCase() + membership.status.slice(1)} Training Plan
               </Badge>
               <h2 className="text-2xl font-bold mb-1">{membership.plan?.name}</h2>
               <p className="text-primary-foreground/80 mb-2">
@@ -163,9 +163,9 @@ export default function MemberOverview() {
       ) : (
         <Card className="p-6 text-center">
           <Dumbbell className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-          <h3 className="text-xl font-bold text-foreground mb-2">No Active Membership</h3>
+          <h3 className="text-xl font-bold text-foreground mb-2">No Active Training Plan</h3>
           <p className="text-muted-foreground mb-4">
-            Get started with a membership plan to access all gym facilities
+            Get started with a training plan to access all gym facilities
           </p>
           <Button className="bg-gradient-primary">View Plans</Button>
         </Card>
@@ -309,7 +309,7 @@ export default function MemberOverview() {
       <Dialog open={showQR} onOpenChange={setShowQR}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Your Membership QR Code</DialogTitle>
+            <DialogTitle>Your Training QR Code</DialogTitle>
           </DialogHeader>
           <div className="flex flex-col items-center justify-center py-6">
             {membership?.qr_code && (

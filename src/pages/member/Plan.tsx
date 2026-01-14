@@ -93,8 +93,8 @@ export default function Plan() {
       className="space-y-6"
     >
       <div>
-        <h1 className="text-3xl font-bold text-foreground">Membership Plans</h1>
-        <p className="text-muted-foreground mt-2">View your current plan and available options</p>
+        <h1 className="text-3xl font-bold text-foreground">Training Plans</h1>
+        <p className="text-muted-foreground mt-2">View your current training plan and available options</p>
       </div>
 
       {loading ? (

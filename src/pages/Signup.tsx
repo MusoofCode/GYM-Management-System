@@ -50,13 +50,13 @@ export default function Signup() {
               <div className="p-3 rounded-xl bg-gradient-primary">
                 <Dumbbell className="w-8 h-8 text-primary-foreground" />
               </div>
-              <h1 className="text-4xl font-black text-foreground">FitFlow</h1>
+              <h1 className="text-4xl font-black text-foreground">Gym Manager</h1>
             </div>
             <h2 className="text-3xl font-bold text-foreground mb-4">
               Start Your Journey Today
             </h2>
             <p className="text-lg text-muted-foreground">
-              Join thousands of fitness professionals managing their gyms efficiently.
+              Join the efficient student and payroll management system.
             </p>
           </motion.div>
         </div>
@@ -73,7 +73,7 @@ export default function Signup() {
           <Card className="p-8 shadow-premium border-border">
             <div className="text-center mb-8">
               <h2 className="text-3xl font-bold text-foreground mb-2">Create Account</h2>
-              <p className="text-muted-foreground">Get started with FitFlow</p>
+              <p className="text-muted-foreground">Get started with Gym Manager</p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
