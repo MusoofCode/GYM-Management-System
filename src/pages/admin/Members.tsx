@@ -18,7 +18,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Search, MoreVertical, Edit, Trash2, CreditCard } from 'lucide-react';
+import { Plus, Search, MoreVertical, Edit, Trash2, CreditCard, CheckCircle2, XCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import {
   DropdownMenu,
@@ -31,6 +31,7 @@ import {
 import { AddMemberDialog } from '@/components/admin/AddMemberDialog';
 import { EditMemberDialog } from '@/components/admin/EditMemberDialog';
 import { AssignMembershipDialog } from '@/components/admin/AssignMembershipDialog';
+import { ConfirmPaymentDialog } from '@/components/admin/ConfirmPaymentDialog';
 
 interface Member {
   user_id: string;
@@ -39,8 +40,10 @@ interface Member {
   phone: string | null;
   created_at: string;
   membership?: {
+    id: string;
     status: string;
     end_date: string;
+    payment_status: string | null;
     plan: {
       name: string;
     };
@@ -55,6 +58,7 @@ export default function AdminMembers() {
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showAssignDialog, setShowAssignDialog] = useState(false);
+  const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [deletingMember, setDeletingMember] = useState(false);
@@ -83,9 +87,11 @@ export default function AdminMembers() {
       const { data: memberships } = await supabase
         .from('memberships')
         .select(`
+          id,
           user_id,
           status,
           end_date,
+          payment_status,
           plan:membership_plans(name)
         `);
 
@@ -137,6 +143,11 @@ export default function AdminMembers() {
   const handleAssignMembership = (member: Member) => {
     setSelectedMember(member);
     setShowAssignDialog(true);
+  };
+
+  const handleConfirmPayment = (member: Member) => {
+    setSelectedMember(member);
+    setShowPaymentDialog(true);
   };
 
   const handleDeleteClick = (member: Member) => {
@@ -240,9 +251,15 @@ export default function AdminMembers() {
           </p>
         </Card>
         <Card className="p-4">
-          <p className="text-sm text-muted-foreground">Pending</p>
+          <p className="text-sm text-muted-foreground">Paid Members</p>
+          <p className="text-2xl font-bold text-success">
+            {members.filter(m => m.membership?.payment_status === 'paid').length}
+          </p>
+        </Card>
+        <Card className="p-4">
+          <p className="text-sm text-muted-foreground">Unpaid/Pending</p>
           <p className="text-2xl font-bold text-warning">
-            {members.filter(m => m.membership?.status === 'pending').length}
+            {members.filter(m => m.membership?.payment_status === 'pending' || !m.membership?.payment_status).length}
           </p>
         </Card>
       </div>
@@ -274,9 +291,22 @@ export default function AdminMembers() {
                     <div className="flex items-center gap-2 mb-1">
                       <h3 className="font-semibold text-foreground">{member.full_name}</h3>
                       {member.membership && (
-                        <Badge variant="outline" className={`text-xs bg-${getStatusColor(member.membership.status)}/10 text-${getStatusColor(member.membership.status)} border-${getStatusColor(member.membership.status)}/20`}>
-                          {member.membership.status}
-                        </Badge>
+                        <>
+                          <Badge variant="outline" className={`text-xs bg-${getStatusColor(member.membership.status)}/10 text-${getStatusColor(member.membership.status)} border-${getStatusColor(member.membership.status)}/20`}>
+                            {member.membership.status}
+                          </Badge>
+                          {member.membership.payment_status === 'paid' ? (
+                            <Badge className="text-xs bg-success/10 text-success border-success/20">
+                              <CheckCircle2 className="w-3 h-3 mr-1" />
+                              Paid
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-xs bg-warning/10 text-warning border-warning/20">
+                              <XCircle className="w-3 h-3 mr-1" />
+                              Unpaid
+                            </Badge>
+                          )}
+                        </>
                       )}
                     </div>
                     <p className="text-sm text-muted-foreground">{member.email}</p>
@@ -315,6 +345,10 @@ export default function AdminMembers() {
                       <CreditCard className="w-4 h-4 mr-2" />
                       Assign Membership
                     </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleConfirmPayment(member)}>
+                      <CheckCircle2 className="w-4 h-4 mr-2" />
+                      Confirm Payment
+                    </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem 
                       className="text-destructive"
@@ -346,13 +380,24 @@ export default function AdminMembers() {
       />
 
       {selectedMember && (
-        <AssignMembershipDialog
-          open={showAssignDialog}
-          onOpenChange={setShowAssignDialog}
-          userId={selectedMember.user_id}
-          userName={selectedMember.full_name}
-          onSuccess={fetchMembers}
-        />
+        <>
+          <AssignMembershipDialog
+            open={showAssignDialog}
+            onOpenChange={setShowAssignDialog}
+            userId={selectedMember.user_id}
+            userName={selectedMember.full_name}
+            onSuccess={fetchMembers}
+          />
+          
+          <ConfirmPaymentDialog
+            open={showPaymentDialog}
+            onOpenChange={setShowPaymentDialog}
+            userId={selectedMember.user_id}
+            userName={selectedMember.full_name}
+            membershipId={selectedMember.membership?.id}
+            onSuccess={fetchMembers}
+          />
+        </>
       )}
 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
