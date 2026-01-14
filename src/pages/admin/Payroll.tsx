@@ -95,23 +95,37 @@ export default function AdminPayroll() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      // Fetch staff members
-      const { data: staffData, error: staffError } = await supabase
-        .from("profiles")
-        .select(`
-          user_id,
-          full_name,
-          user_roles!inner(role)
-        `)
-        .in("user_roles.role", ["staff", "trainer"]);
+      // First, fetch user_roles for staff and trainers
+      const { data: rolesData, error: rolesError } = await supabase
+        .from("user_roles")
+        .select("user_id, role")
+        .in("role", ["staff", "trainer"]);
 
-      if (staffError) throw staffError;
+      if (rolesError) throw rolesError;
 
-      const staff = staffData?.map((profile: any) => ({
-        user_id: profile.user_id,
-        full_name: profile.full_name,
-        role: profile.user_roles.role,
-      })) || [];
+      const userIds = rolesData?.map((role) => role.user_id) || [];
+
+      let staff: StaffMember[] = [];
+      
+      if (userIds.length > 0) {
+        // Then fetch profiles for those users
+        const { data: profilesData, error: profilesError } = await supabase
+          .from("profiles")
+          .select("user_id, full_name")
+          .in("user_id", userIds);
+
+        if (profilesError) throw profilesError;
+
+        // Join the data
+        staff = profilesData?.map((profile: any) => {
+          const userRole = rolesData?.find((r) => r.user_id === profile.user_id);
+          return {
+            user_id: profile.user_id,
+            full_name: profile.full_name,
+            role: userRole?.role || "staff",
+          };
+        }) || [];
+      }
 
       setStaffMembers(staff);
 

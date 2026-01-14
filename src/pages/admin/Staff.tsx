@@ -43,28 +43,45 @@ export default function AdminStaff() {
   const fetchStaff = async () => {
     setLoading(true);
     try {
-      // Fetch all staff and trainer profiles with their roles
-      const { data, error } = await supabase
+      // First, fetch user_roles for staff and trainers
+      const { data: rolesData, error: rolesError } = await supabase
+        .from("user_roles")
+        .select("user_id, role")
+        .in("role", ["staff", "trainer"]);
+
+      if (rolesError) throw rolesError;
+
+      if (!rolesData || rolesData.length === 0) {
+        setStaff([]);
+        return;
+      }
+
+      // Get the user_ids
+      const userIds = rolesData.map((role) => role.user_id);
+
+      // Then fetch profiles for those users
+      const { data: profilesData, error: profilesError } = await supabase
         .from("profiles")
-        .select(`
-          *,
-          user_roles!inner(role)
-        `)
-        .in("user_roles.role", ["staff", "trainer"])
+        .select("*")
+        .in("user_id", userIds)
         .order("full_name");
 
-      if (error) throw error;
+      if (profilesError) throw profilesError;
 
-      const staffData = data?.map((profile: any) => ({
-        id: profile.id,
-        user_id: profile.user_id,
-        full_name: profile.full_name,
-        email: profile.email,
-        phone: profile.phone,
-        status: profile.status,
-        joined_date: profile.joined_date,
-        role: profile.user_roles.role,
-      })) || [];
+      // Join the data
+      const staffData = profilesData?.map((profile: any) => {
+        const userRole = rolesData.find((r) => r.user_id === profile.user_id);
+        return {
+          id: profile.id,
+          user_id: profile.user_id,
+          full_name: profile.full_name,
+          email: profile.email,
+          phone: profile.phone,
+          status: profile.status,
+          joined_date: profile.joined_date,
+          role: userRole?.role || "staff",
+        };
+      }) || [];
 
       setStaff(staffData);
     } catch (error: any) {
