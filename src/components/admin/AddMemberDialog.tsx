@@ -7,6 +7,8 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
 import { notifyNewMemberAdded } from '@/lib/notifications';
+import { PhotoUpload } from './PhotoUpload';
+import { uploadStudentPhoto } from '@/lib/imageCompression';
 
 interface AddMemberDialogProps {
   open: boolean;
@@ -17,6 +19,7 @@ interface AddMemberDialogProps {
 export const AddMemberDialog = ({ open, onOpenChange, onSuccess }: AddMemberDialogProps) => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -47,6 +50,17 @@ export const AddMemberDialog = ({ open, onOpenChange, onSuccess }: AddMemberDial
       if (authError) throw authError;
       if (!authData.user) throw new Error('Failed to create user');
 
+      // Upload photo if provided
+      let avatarUrl = null;
+      if (photoFile) {
+        try {
+          avatarUrl = await uploadStudentPhoto(photoFile, authData.user.id);
+        } catch (photoError) {
+          console.error('Photo upload error:', photoError);
+          // Continue without photo
+        }
+      }
+
       // Create profile
       const { error: profileError } = await supabase
         .from('profiles')
@@ -59,6 +73,7 @@ export const AddMemberDialog = ({ open, onOpenChange, onSuccess }: AddMemberDial
           address: formData.address || null,
           emergency_contact: formData.emergencyContact || null,
           emergency_phone: formData.emergencyPhone || null,
+          avatar_url: avatarUrl,
         });
 
       if (profileError) throw profileError;
@@ -93,6 +108,7 @@ export const AddMemberDialog = ({ open, onOpenChange, onSuccess }: AddMemberDial
 
       onSuccess();
       onOpenChange(false);
+      setPhotoFile(null);
       setFormData({
         email: '',
         password: '',
@@ -124,6 +140,12 @@ export const AddMemberDialog = ({ open, onOpenChange, onSuccess }: AddMemberDial
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
+          <PhotoUpload
+            userName={formData.fullName || 'New Student'}
+            onPhotoSelected={setPhotoFile}
+            onPhotoRemoved={() => setPhotoFile(null)}
+            disabled={loading}
+          />
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email *</Label>
