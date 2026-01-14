@@ -19,6 +19,7 @@ import {
   Tag,
   ShoppingCart,
   FileText,
+  Wallet,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import AdminOverview from './Overview';
@@ -34,11 +35,13 @@ import AdminCoupons from './Coupons';
 import AdminReports from './Reports';
 import AdminProgressTracking from './ProgressTracking';
 import AdminStaff from './Staff';
+import AdminPayroll from './Payroll';
 
 const navigationItems = [
   { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
-  { name: 'Members', href: '/admin/members', icon: Users },
+  { name: 'Students', href: '/admin/members', icon: Users },
   { name: 'Staff', href: '/admin/staff', icon: UserSquare },
+  { name: 'Payroll', href: '/admin/payroll', icon: Wallet },
   { name: 'Attendance', href: '/admin/attendance', icon: UserCheck },
   { name: 'Classes', href: '/admin/classes', icon: Calendar },
   { name: 'Memberships', href: '/admin/membership-plans', icon: FileText },
@@ -136,6 +139,7 @@ export default function AdminDashboard() {
             <Route index element={<AdminOverview />} />
             <Route path="members" element={<AdminMembers />} />
             <Route path="staff" element={<AdminStaff />} />
+            <Route path="payroll" element={<AdminPayroll />} />
             <Route path="attendance" element={<AdminAttendance />} />
             <Route path="classes" element={<AdminClasses />} />
             <Route path="membership-plans" element={<AdminMembershipPlans />} />
