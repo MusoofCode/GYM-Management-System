@@ -6,11 +6,14 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
+import { PhotoUpload } from './PhotoUpload';
+import { uploadStudentPhoto, deleteStudentPhoto } from '@/lib/imageCompression';
 
 interface Member {
   user_id: string;
   full_name: string;
   email: string;
+  avatar_url?: string | null;
   phone?: string;
   date_of_birth?: string;
   address?: string;
@@ -28,6 +31,8 @@ interface EditMemberDialogProps {
 export const EditMemberDialog = ({ open, onOpenChange, member, onSuccess }: EditMemberDialogProps) => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [removePhoto, setRemovePhoto] = useState(false);
   const [formData, setFormData] = useState({
     fullName: '',
     phone: '',
@@ -39,6 +44,8 @@ export const EditMemberDialog = ({ open, onOpenChange, member, onSuccess }: Edit
 
   useEffect(() => {
     if (member) {
+      setPhotoFile(null);
+      setRemovePhoto(false);
       setFormData({
         fullName: member.full_name || '',
         phone: member.phone || '',
@@ -57,6 +64,34 @@ export const EditMemberDialog = ({ open, onOpenChange, member, onSuccess }: Edit
     setLoading(true);
 
     try {
+      // Handle photo upload/removal
+      let avatarUrl = member.avatar_url;
+      
+      if (removePhoto && member.avatar_url) {
+        // Delete old photo
+        try {
+          await deleteStudentPhoto(member.avatar_url);
+          avatarUrl = null;
+        } catch (photoError) {
+          console.error('Photo deletion error:', photoError);
+        }
+      } else if (photoFile) {
+        // Delete old photo if exists
+        if (member.avatar_url) {
+          try {
+            await deleteStudentPhoto(member.avatar_url);
+          } catch (photoError) {
+            console.error('Photo deletion error:', photoError);
+          }
+        }
+        // Upload new photo
+        try {
+          avatarUrl = await uploadStudentPhoto(photoFile, member.user_id);
+        } catch (photoError) {
+          console.error('Photo upload error:', photoError);
+        }
+      }
+
       const { error } = await supabase
         .from('profiles')
         .update({
@@ -66,6 +101,7 @@ export const EditMemberDialog = ({ open, onOpenChange, member, onSuccess }: Edit
           address: formData.address || null,
           emergency_contact: formData.emergencyContact || null,
           emergency_phone: formData.emergencyPhone || null,
+          avatar_url: avatarUrl,
         })
         .eq('user_id', member.user_id);
 
@@ -99,6 +135,21 @@ export const EditMemberDialog = ({ open, onOpenChange, member, onSuccess }: Edit
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
+          {member && (
+            <PhotoUpload
+              currentPhotoUrl={member.avatar_url}
+              userName={formData.fullName || member.full_name}
+              onPhotoSelected={(file) => {
+                setPhotoFile(file);
+                setRemovePhoto(false);
+              }}
+              onPhotoRemoved={() => {
+                setPhotoFile(null);
+                setRemovePhoto(true);
+              }}
+              disabled={loading}
+            />
+          )}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2 col-span-2">
               <Label htmlFor="email">Email</Label>

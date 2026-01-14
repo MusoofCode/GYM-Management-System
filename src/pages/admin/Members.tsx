@@ -4,7 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -38,6 +38,7 @@ interface Member {
   full_name: string;
   email: string;
   phone: string | null;
+  avatar_url: string | null;
   created_at: string;
   membership?: {
     id: string;
@@ -77,6 +78,7 @@ export default function AdminStudents() {
           full_name,
           email,
           phone,
+          avatar_url,
           created_at
         `)
         .order('created_at', { ascending: false });
@@ -282,6 +284,9 @@ export default function AdminStudents() {
               >
                 <div className="flex items-center gap-4 flex-1">
                   <Avatar className="h-12 w-12 border-2 border-primary/20">
+                    {member.avatar_url && (
+                      <AvatarImage src={member.avatar_url} alt={member.full_name} />
+                    )}
                     <AvatarFallback className="bg-primary/10 text-primary font-semibold">
                       {member.full_name.split(' ').map(n => n[0]).join('')}
                     </AvatarFallback>
