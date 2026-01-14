@@ -12,8 +12,8 @@ export const Header = () => {
               <Dumbbell className="w-6 h-6 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-foreground">FitFlow</h1>
-              <p className="text-xs text-muted-foreground">Premium Gym Management</p>
+              <h1 className="text-xl font-bold text-foreground">Gym Manager</h1>
+              <p className="text-xs text-muted-foreground">Student & Payroll Management</p>
             </div>
           </div>
           

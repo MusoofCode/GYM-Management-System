@@ -49,13 +49,13 @@ export default function Login() {
               <div className="p-3 rounded-xl bg-gradient-primary">
                 <Dumbbell className="w-8 h-8 text-primary-foreground" />
               </div>
-              <h1 className="text-4xl font-black text-foreground">FitFlow</h1>
+              <h1 className="text-4xl font-black text-foreground">Gym Manager</h1>
             </div>
             <h2 className="text-3xl font-bold text-foreground mb-4">
-              Manage Your Fitness Journey
+              Student & Payroll Management
             </h2>
             <p className="text-lg text-muted-foreground">
-              Track members, schedule classes, and grow your gym business.
+              Track students, manage payroll, and grow your gym business.
             </p>
           </motion.div>
         </div>

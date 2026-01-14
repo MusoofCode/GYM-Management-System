@@ -54,7 +54,7 @@ export default function MemberDashboard() {
                   <div className="p-2 rounded-lg bg-gradient-primary">
                     <Dumbbell className="w-5 h-5 text-primary-foreground" />
                   </div>
-                  <span className="font-bold text-lg text-foreground">FitFlow</span>
+                  <span className="font-bold text-lg text-foreground">Gym Manager</span>
                 </div>
               )}
               <Button
