@@ -44,27 +44,64 @@ export default function ExerciseRoutine() {
 
   const fetchWorkoutPlans = async () => {
     try {
+      // First, get workout plans
       const { data: plansData, error: plansError } = await supabase
         .from('workout_plans')
-        .select(`
-          *,
-          trainer:trainers!workout_plans_trainer_id_fkey(
-            user_id,
-            user:profiles!trainers_user_id_fkey(full_name)
-          )
-        `)
+        .select('*')
         .eq('user_id', user?.id)
         .order('created_at', { ascending: false });
 
       if (plansError) throw plansError;
 
-      // Transform the data to flatten trainer info
-      const transformedPlans = plansData?.map(plan => ({
+      if (!plansData || plansData.length === 0) {
+        setWorkoutPlans([]);
+        return;
+      }
+
+      // Get trainer IDs
+      const trainerIds = plansData
+        .map(plan => plan.trainer_id)
+        .filter(Boolean) as string[];
+
+      // Fetch trainer profiles if any trainer IDs exist
+      let trainersMap: Record<string, any> = {};
+      if (trainerIds.length > 0) {
+        // Get trainer user IDs
+        const { data: trainersData } = await supabase
+          .from('trainers')
+          .select('id, user_id')
+          .in('id', trainerIds);
+
+        if (trainersData && trainersData.length > 0) {
+          const trainerUserIds = trainersData.map(t => t.user_id);
+          
+          // Get profiles for trainers
+          const { data: profilesData } = await supabase
+            .from('profiles')
+            .select('user_id, full_name')
+            .in('user_id', trainerUserIds);
+
+          // Create a map of trainer_id -> profile
+          if (profilesData) {
+            trainersData.forEach(trainer => {
+              const profile = profilesData.find(p => p.user_id === trainer.user_id);
+              if (profile) {
+                trainersMap[trainer.id] = {
+                  full_name: profile.full_name
+                };
+              }
+            });
+          }
+        }
+      }
+
+      // Transform the data to include trainer info
+      const transformedPlans = plansData.map(plan => ({
         ...plan,
-        trainer: plan.trainer ? {
-          full_name: (plan.trainer as any).user?.full_name || 'Unknown Trainer'
-        } : null
-      })) || [];
+        trainer: plan.trainer_id && trainersMap[plan.trainer_id] 
+          ? trainersMap[plan.trainer_id]
+          : null
+      }));
 
       setWorkoutPlans(transformedPlans);
     } catch (error: any) {
