@@ -18,7 +18,7 @@ export const StatsCard = ({ title, value, icon: Icon, trend, trendUp, delay = 0 
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.5 }}
     >
-      <Card className="p-6 shadow-card border-border hover:shadow-premium transition-all duration-300 group">
+      <Card className="p-6 glass-hover">
         <div className="flex items-start justify-between">
           <div className="space-y-2">
             <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">{title}</p>
