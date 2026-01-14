@@ -50,7 +50,7 @@ interface Member {
   };
 }
 
-export default function AdminMembers() {
+export default function AdminStudents() {
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -104,7 +104,7 @@ export default function AdminMembers() {
       setMembers(membersWithMemberships || []);
     } catch (error: any) {
       toast({
-        title: 'Error loading members',
+        title: 'Error loading students',
         description: error.message,
         variant: 'destructive'
       });
@@ -167,7 +167,7 @@ export default function AdminMembers() {
 
       toast({
         title: 'Success',
-        description: 'Member deleted successfully',
+        description: 'Student deleted successfully',
       });
 
       fetchMembers();
@@ -176,7 +176,7 @@ export default function AdminMembers() {
     } catch (error: any) {
       toast({
         title: 'Error',
-        description: error.message || 'Failed to delete member',
+        description: error.message || 'Failed to delete student',
         variant: 'destructive',
       });
     } finally {
@@ -193,15 +193,15 @@ export default function AdminMembers() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Members Management</h1>
-          <p className="text-muted-foreground mt-2">Manage all gym members and memberships</p>
+          <h1 className="text-3xl font-bold text-foreground">Students Management</h1>
+          <p className="text-muted-foreground mt-2">Manage all gym students and memberships</p>
         </div>
         <Button 
           onClick={() => setShowAddDialog(true)}
           className="bg-gradient-primary text-primary-foreground font-semibold shadow-premium"
         >
           <Plus className="w-4 h-4 mr-2" />
-          Add Member
+          Add Student
         </Button>
       </div>
 
@@ -211,7 +211,7 @@ export default function AdminMembers() {
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-3 w-5 h-5 text-muted-foreground" />
             <Input
-              placeholder="Search members by name or email..."
+              placeholder="Search students by name or email..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
@@ -233,9 +233,9 @@ export default function AdminMembers() {
       </Card>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <Card className="p-4">
-          <p className="text-sm text-muted-foreground">Total Members</p>
+          <p className="text-sm text-muted-foreground">Total Students</p>
           <p className="text-2xl font-bold text-foreground">{members.length}</p>
         </Card>
         <Card className="p-4">
@@ -251,25 +251,25 @@ export default function AdminMembers() {
           </p>
         </Card>
         <Card className="p-4">
-          <p className="text-sm text-muted-foreground">Paid Members</p>
+          <p className="text-sm text-muted-foreground">Paid</p>
           <p className="text-2xl font-bold text-success">
             {members.filter(m => m.membership?.payment_status === 'paid').length}
           </p>
         </Card>
         <Card className="p-4">
-          <p className="text-sm text-muted-foreground">Unpaid/Pending</p>
+          <p className="text-sm text-muted-foreground">Unpaid</p>
           <p className="text-2xl font-bold text-warning">
             {members.filter(m => m.membership?.payment_status === 'pending' || !m.membership?.payment_status).length}
           </p>
         </Card>
       </div>
 
-      {/* Members List */}
+      {/* Students List */}
       <Card className="p-6">
         {loading ? (
-          <p className="text-center text-muted-foreground py-8">Loading members...</p>
+          <p className="text-center text-muted-foreground py-8">Loading students...</p>
         ) : filteredMembers.length === 0 ? (
-          <p className="text-center text-muted-foreground py-8">No members found</p>
+          <p className="text-center text-muted-foreground py-8">No students found</p>
         ) : (
           <div className="space-y-3">
             {filteredMembers.map((member, index) => (
@@ -339,7 +339,7 @@ export default function AdminMembers() {
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => handleEdit(member)}>
                       <Edit className="w-4 h-4 mr-2" />
-                      Edit Member
+                      Edit Student
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => handleAssignMembership(member)}>
                       <CreditCard className="w-4 h-4 mr-2" />
@@ -355,7 +355,7 @@ export default function AdminMembers() {
                       onClick={() => handleDeleteClick(member)}
                     >
                       <Trash2 className="w-4 h-4 mr-2" />
-                      Delete Member
+                      Delete Student
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
