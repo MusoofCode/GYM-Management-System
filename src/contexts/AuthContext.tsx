@@ -60,13 +60,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         .from('user_roles')
         .select('role')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
-      setUserRole(data?.role || 'member');
+      
+      // If no role exists, create default admin role for internal system
+      if (!data) {
+        const { error: insertError } = await supabase
+          .from('user_roles')
+          .insert({ user_id: userId, role: 'admin' });
+        
+        if (insertError) throw insertError;
+        setUserRole('admin');
+      } else {
+        setUserRole(data.role);
+      }
     } catch (error) {
       console.error('Error fetching user role:', error);
-      setUserRole('member');
+      setUserRole('admin'); // Default to admin for internal system
     } finally {
       setLoading(false);
     }
