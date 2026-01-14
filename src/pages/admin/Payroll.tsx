@@ -22,7 +22,9 @@ import {
   Calendar,
   Plus,
   CheckCircle2,
-  XCircle,
+  Download,
+  FileText,
+  FileSpreadsheet,
 } from "lucide-react";
 import { format } from "date-fns";
 import {
@@ -40,6 +42,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { exportPayrollToCSV, exportPayrollToPDF } from "@/lib/payrollExport";
+import { cn } from "@/lib/utils";
 
 interface PayrollRecord {
   id: string;
@@ -259,6 +269,22 @@ export default function AdminPayroll() {
     }
   };
 
+  const handleExportCSV = () => {
+    exportPayrollToCSV(filteredRecords);
+    toast({
+      title: "Success",
+      description: "Payroll report exported as CSV",
+    });
+  };
+
+  const handleExportPDF = () => {
+    exportPayrollToPDF(filteredRecords);
+    toast({
+      title: "Success",
+      description: "Payroll report exported as PDF",
+    });
+  };
+
   const filteredRecords = payrollRecords.filter((record) =>
     record.staff_name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -267,92 +293,141 @@ export default function AdminPayroll() {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
       className="space-y-6"
     >
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <motion.div 
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="flex items-center justify-between"
+      >
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Staff Payroll</h1>
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
+            Staff Payroll
+          </h1>
           <p className="text-muted-foreground mt-2">
             Manage staff salaries and payments
           </p>
         </div>
-        <Button onClick={() => setShowAddDialog(true)}>
-          <Plus className="w-4 h-4 mr-2" />
-          Add Payroll
-        </Button>
-      </div>
+        <div className="flex gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="gap-2">
+                <Download className="w-4 h-4" />
+                Export
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={handleExportCSV} className="gap-2">
+                <FileSpreadsheet className="w-4 h-4" />
+                Export as CSV
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleExportPDF} className="gap-2">
+                <FileText className="w-4 h-4" />
+                Export as PDF
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Button onClick={() => setShowAddDialog(true)}>
+            <Plus className="w-4 h-4 mr-2" />
+            Add Payroll
+          </Button>
+        </div>
+      </motion.div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="p-4">
-          <div className="flex items-center gap-3">
-            <div className="p-3 rounded-full bg-success/10">
-              <DollarSign className="w-6 h-6 text-success" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Total Paid</p>
-              <p className="text-2xl font-bold text-foreground">
-                ${stats.totalPaid.toFixed(2)}
-              </p>
-            </div>
-          </div>
-        </Card>
-        <Card className="p-4">
-          <div className="flex items-center gap-3">
-            <div className="p-3 rounded-full bg-warning/10">
-              <Calendar className="w-6 h-6 text-warning" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Pending</p>
-              <p className="text-2xl font-bold text-foreground">
-                ${stats.totalPending.toFixed(2)}
-              </p>
-            </div>
-          </div>
-        </Card>
-        <Card className="p-4">
-          <div className="flex items-center gap-3">
-            <div className="p-3 rounded-full bg-primary/10">
-              <Users className="w-6 h-6 text-primary" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Staff Count</p>
-              <p className="text-2xl font-bold text-foreground">{stats.staffCount}</p>
-            </div>
-          </div>
-        </Card>
-        <Card className="p-4">
-          <div className="flex items-center gap-3">
-            <div className="p-3 rounded-full bg-accent/10">
-              <TrendingUp className="w-6 h-6 text-accent" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">This Month</p>
-              <p className="text-2xl font-bold text-foreground">
-                ${stats.thisMonthTotal.toFixed(2)}
-              </p>
-            </div>
-          </div>
-        </Card>
+        {[
+          { 
+            icon: DollarSign, 
+            label: "Total Paid", 
+            value: `$${stats.totalPaid.toFixed(2)}`, 
+            color: "success",
+            gradient: "from-green-500/20 to-emerald-500/20"
+          },
+          { 
+            icon: Calendar, 
+            label: "Pending", 
+            value: `$${stats.totalPending.toFixed(2)}`, 
+            color: "warning",
+            gradient: "from-yellow-500/20 to-orange-500/20"
+          },
+          { 
+            icon: Users, 
+            label: "Staff Count", 
+            value: stats.staffCount, 
+            color: "primary",
+            gradient: "from-blue-500/20 to-cyan-500/20"
+          },
+          { 
+            icon: TrendingUp, 
+            label: "This Month", 
+            value: `$${stats.thisMonthTotal.toFixed(2)}`, 
+            color: "accent",
+            gradient: "from-purple-500/20 to-pink-500/20"
+          }
+        ].map((stat, index) => {
+          const Icon = stat.icon;
+          return (
+            <motion.div
+              key={stat.label}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.15 + index * 0.05 }}
+            >
+              <Card className={cn(
+                "p-6 glass-hover hover-lift transition-all duration-300 bg-gradient-to-br",
+                stat.gradient
+              )}>
+                <div className="flex items-center gap-4">
+                  <div className={cn(
+                    "p-3 rounded-2xl shadow-lg",
+                    `bg-${stat.color}/10 hover-scale`
+                  )}>
+                    <Icon className={`w-6 h-6 text-${stat.color}`} />
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground font-medium">{stat.label}</p>
+                    <p className="text-3xl font-bold text-foreground mt-1">
+                      {stat.value}
+                    </p>
+                  </div>
+                </div>
+              </Card>
+            </motion.div>
+          );
+        })}
       </div>
 
       {/* Search */}
-      <Card className="p-4">
-        <div className="flex items-center gap-2">
-          <Search className="w-5 h-5 text-muted-foreground" />
-          <Input
-            placeholder="Search by staff name..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="flex-1"
-          />
-        </div>
-      </Card>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.3 }}
+      >
+        <Card className="p-4 glass-light hover-glow transition-all duration-300">
+          <div className="flex items-center gap-2">
+            <Search className="w-5 h-5 text-muted-foreground" />
+            <Input
+              placeholder="Search by staff name..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="flex-1 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
+            />
+          </div>
+        </Card>
+      </motion.div>
 
       {/* Payroll Table */}
-      <Card>
-        <Table>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+      >
+        <Card className="glass overflow-hidden">
+          <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Staff Member</TableHead>
@@ -422,6 +497,7 @@ export default function AdminPayroll() {
           </TableBody>
         </Table>
       </Card>
+    </motion.div>
 
       {/* Add Payroll Dialog */}
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
