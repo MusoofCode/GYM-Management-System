@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { UserPlus, Search, Mail, Phone, Calendar, Edit, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { AddStaffDialog } from "@/components/admin/AddStaffDialog";
+import { EditStaffDialog } from "@/components/admin/EditStaffDialog";
 
 interface StaffMember {
   id: string;
@@ -35,6 +36,8 @@ export default function AdminStaff() {
   const [staff, setStaff] = useState<StaffMember[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [selectedStaff, setSelectedStaff] = useState<StaffMember | null>(null);
 
   useEffect(() => {
     fetchStaff();
@@ -100,6 +103,11 @@ export default function AdminStaff() {
       member.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       member.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleEdit = (member: StaffMember) => {
+    setSelectedStaff(member);
+    setShowEditDialog(true);
+  };
 
   const handleDelete = async (userId: string, name: string) => {
     if (!confirm(`Are you sure you want to remove ${name} from staff?`)) return;
@@ -258,13 +266,22 @@ export default function AdminStaff() {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDelete(member.user_id, member.full_name)}
-                    >
-                      <Trash2 className="w-4 h-4 text-destructive" />
-                    </Button>
+                    <div className="flex items-center justify-end gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleEdit(member)}
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDelete(member.user_id, member.full_name)}
+                      >
+                        <Trash2 className="w-4 h-4 text-destructive" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))
@@ -276,6 +293,13 @@ export default function AdminStaff() {
       <AddStaffDialog
         open={showAddDialog}
         onOpenChange={setShowAddDialog}
+        onSuccess={fetchStaff}
+      />
+
+      <EditStaffDialog
+        open={showEditDialog}
+        onOpenChange={setShowEditDialog}
+        staff={selectedStaff}
         onSuccess={fetchStaff}
       />
     </motion.div>
