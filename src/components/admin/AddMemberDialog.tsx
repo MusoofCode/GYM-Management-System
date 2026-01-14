@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
+import { notifyNewMemberAdded } from '@/lib/notifications';
 
 interface AddMemberDialogProps {
   open: boolean;
@@ -71,6 +72,19 @@ export const AddMemberDialog = ({ open, onOpenChange, onSuccess }: AddMemberDial
         });
 
       if (roleError) throw roleError;
+
+      // Get all admin user IDs to notify
+      const { data: adminRoles } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'admin');
+
+      if (adminRoles && adminRoles.length > 0) {
+        await notifyNewMemberAdded(
+          adminRoles.map(r => r.user_id),
+          formData.fullName
+        );
+      }
 
       toast({
         title: 'Success',

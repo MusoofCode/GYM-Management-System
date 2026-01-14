@@ -33,13 +33,14 @@ import AdminPOS from './POS';
 import AdminCoupons from './Coupons';
 import AdminReports from './Reports';
 import AdminProgressTracking from './ProgressTracking';
+import AdminStaff from './Staff';
 
 const navigationItems = [
   { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
   { name: 'Members', href: '/admin/members', icon: Users },
+  { name: 'Staff', href: '/admin/staff', icon: UserSquare },
   { name: 'Attendance', href: '/admin/attendance', icon: UserCheck },
   { name: 'Classes', href: '/admin/classes', icon: Calendar },
-  { name: 'Trainers', href: '/admin/trainers', icon: UserSquare },
   { name: 'Memberships', href: '/admin/membership-plans', icon: FileText },
   { name: 'Payments', href: '/admin/payments', icon: CreditCard },
   { name: 'Products', href: '/admin/products', icon: Package },
@@ -134,6 +135,7 @@ export default function AdminDashboard() {
           <Routes>
             <Route index element={<AdminOverview />} />
             <Route path="members" element={<AdminMembers />} />
+            <Route path="staff" element={<AdminStaff />} />
             <Route path="attendance" element={<AdminAttendance />} />
             <Route path="classes" element={<AdminClasses />} />
             <Route path="membership-plans" element={<AdminMembershipPlans />} />

@@ -1,5 +1,6 @@
-import { Dumbbell, Bell, Settings, User } from "lucide-react";
+import { Dumbbell, Settings, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { NotificationDropdown } from "@/components/NotificationDropdown";
 
 export const Header = () => {
   return (
@@ -17,10 +18,7 @@ export const Header = () => {
           </div>
           
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="relative">
-              <Bell className="w-5 h-5" />
-              <span className="absolute -top-1 -right-1 w-2 h-2 bg-secondary rounded-full"></span>
-            </Button>
+            <NotificationDropdown />
             <Button variant="ghost" size="icon">
               <Settings className="w-5 h-5" />
             </Button>
