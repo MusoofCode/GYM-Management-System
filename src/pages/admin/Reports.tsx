@@ -4,11 +4,14 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { DollarSign, Users, TrendingUp, Calendar, Download, FileText } from 'lucide-react';
+import { DollarSign, Users, TrendingUp, Calendar, Download, FileText, FileSpreadsheet } from 'lucide-react';
 import { format, subDays, startOfMonth, endOfMonth } from 'date-fns';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 export default function AdminReports() {
   const { toast } = useToast();
@@ -127,11 +130,113 @@ export default function AdminReports() {
     }
   };
 
-  const exportReport = () => {
-    toast({
-      title: 'Export Coming Soon',
-      description: 'Report export functionality will be available soon',
-    });
+  const exportToExcel = () => {
+    try {
+      // Prepare data for export
+      const exportData = [
+        {
+          'Report Type': 'Revenue Summary',
+          'Period': `${dateRange.start} to ${dateRange.end}`,
+          'Total Revenue': `$${stats.totalRevenue.toFixed(2)}`,
+          'Membership Revenue': `$${stats.membershipRevenue.toFixed(2)}`,
+          'Product Revenue': `$${stats.productRevenue.toFixed(2)}`,
+          'Training Revenue': `$${stats.trainingRevenue.toFixed(2)}`,
+        },
+        {},
+        {
+          'Report Type': 'Membership Summary',
+          'Total Members': stats.totalMembers,
+          'Active Members': stats.activeMembers,
+          'Expired Members': stats.expiredMembers,
+          'Frozen Members': stats.frozenMembers,
+          'New Members': stats.newMembers,
+        },
+      ];
+
+      // Create workbook and worksheet
+      const ws = XLSX.utils.json_to_sheet(exportData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Report');
+
+      // Generate filename with date
+      const fileName = `FitFlow_Report_${format(new Date(), 'yyyy-MM-dd')}.xlsx`;
+
+      // Download file
+      XLSX.writeFile(wb, fileName);
+
+      toast({
+        title: 'Success',
+        description: 'Report exported to Excel successfully',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to export report',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const exportToPDF = () => {
+    try {
+      const doc = new jsPDF();
+
+      // Add title
+      doc.setFontSize(20);
+      doc.text('FitFlow - Business Report', 14, 20);
+
+      // Add date range
+      doc.setFontSize(12);
+      doc.text(`Period: ${dateRange.start} to ${dateRange.end}`, 14, 30);
+
+      // Revenue Summary
+      doc.setFontSize(16);
+      doc.text('Revenue Summary', 14, 45);
+
+      autoTable(doc, {
+        startY: 50,
+        head: [['Metric', 'Amount']],
+        body: [
+          ['Total Revenue', `$${stats.totalRevenue.toFixed(2)}`],
+          ['Membership Revenue', `$${stats.membershipRevenue.toFixed(2)}`],
+          ['Product Revenue', `$${stats.productRevenue.toFixed(2)}`],
+          ['Training Revenue', `$${stats.trainingRevenue.toFixed(2)}`],
+        ],
+      });
+
+      // Membership Summary
+      doc.setFontSize(16);
+      doc.text('Membership Summary', 14, (doc as any).lastAutoTable.finalY + 15);
+
+      autoTable(doc, {
+        startY: (doc as any).lastAutoTable.finalY + 20,
+        head: [['Metric', 'Count']],
+        body: [
+          ['Total Members', stats.totalMembers.toString()],
+          ['Active Members', stats.activeMembers.toString()],
+          ['Expired Members', stats.expiredMembers.toString()],
+          ['Frozen Members', stats.frozenMembers.toString()],
+          ['New Members', stats.newMembers.toString()],
+        ],
+      });
+
+      // Generate filename with date
+      const fileName = `FitFlow_Report_${format(new Date(), 'yyyy-MM-dd')}.pdf`;
+
+      // Download file
+      doc.save(fileName);
+
+      toast({
+        title: 'Success',
+        description: 'Report exported to PDF successfully',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to export report',
+        variant: 'destructive',
+      });
+    }
   };
 
   return (
@@ -146,10 +251,16 @@ export default function AdminReports() {
           <h1 className="text-3xl font-bold text-foreground">Reports & Analytics</h1>
           <p className="text-muted-foreground mt-2">Comprehensive business insights</p>
         </div>
-        <Button onClick={exportReport} variant="outline">
-          <Download className="w-4 h-4 mr-2" />
-          Export Report
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={exportToExcel} variant="outline">
+            <FileSpreadsheet className="w-4 h-4 mr-2" />
+            Export Excel
+          </Button>
+          <Button onClick={exportToPDF} variant="outline">
+            <FileText className="w-4 h-4 mr-2" />
+            Export PDF
+          </Button>
+        </div>
       </div>
 
       {/* Date Range Filter */}
