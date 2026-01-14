@@ -476,6 +476,60 @@ export type Database = {
           },
         ]
       }
+      payroll: {
+        Row: {
+          bonus: number | null
+          created_at: string | null
+          deductions: number | null
+          id: string
+          net_amount: number
+          notes: string | null
+          paid_by: string | null
+          payment_date: string
+          payment_method: Database["public"]["Enums"]["payment_method"]
+          payment_period_end: string
+          payment_period_start: string
+          payment_status: string
+          salary_amount: number
+          staff_user_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          bonus?: number | null
+          created_at?: string | null
+          deductions?: number | null
+          id?: string
+          net_amount: number
+          notes?: string | null
+          paid_by?: string | null
+          payment_date?: string
+          payment_method?: Database["public"]["Enums"]["payment_method"]
+          payment_period_end: string
+          payment_period_start: string
+          payment_status?: string
+          salary_amount: number
+          staff_user_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          bonus?: number | null
+          created_at?: string | null
+          deductions?: number | null
+          id?: string
+          net_amount?: number
+          notes?: string | null
+          paid_by?: string | null
+          payment_date?: string
+          payment_method?: Database["public"]["Enums"]["payment_method"]
+          payment_period_end?: string
+          payment_period_start?: string
+          payment_status?: string
+          salary_amount?: number
+          staff_user_id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           category: string | null
