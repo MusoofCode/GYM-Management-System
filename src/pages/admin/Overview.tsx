@@ -154,7 +154,7 @@ export default function AdminOverview() {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatsCard
-          title="Total Members"
+          title="Total Students"
           value={stats.totalMembers.toString()}
           icon={Users}
           trend={`${stats.activeMembers} active`}

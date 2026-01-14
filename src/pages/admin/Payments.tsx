@@ -177,7 +177,7 @@ export default function AdminPayments() {
         <div className="relative">
           <Search className="absolute left-3 top-3 w-5 h-5 text-muted-foreground" />
           <Input
-            placeholder="Search by member name or invoice number..."
+            placeholder="Search by student name or invoice number..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
@@ -200,7 +200,7 @@ export default function AdminPayments() {
                     Date
                   </th>
                   <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">
-                    Member
+                    Student
                   </th>
                   <th className="text-left py-3 px-4 text-sm font-semibold text-muted-foreground">
                     Invoice
