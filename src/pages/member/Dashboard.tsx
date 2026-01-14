@@ -4,10 +4,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { 
   LayoutDashboard, 
-  Calendar, 
-  TrendingUp,
+  Heart,
+  FileText,
+  Activity,
   CreditCard,
-  Settings,
   LogOut,
   Menu,
   X,
@@ -17,18 +17,18 @@ import {
 import { cn } from '@/lib/utils';
 import MemberOverview from './Overview';
 import MemberProfile from './Profile';
-import MemberClasses from './Classes';
-import MemberProgress from './Progress';
 import MemberPayments from './Payments';
-import MemberSettings from './Settings';
+import HealthStatus from './HealthStatus';
+import Plan from './Plan';
+import ExerciseRoutine from './ExerciseRoutine';
 
 const navigationItems = [
   { name: 'Dashboard', href: '/member', icon: LayoutDashboard },
-  { name: 'My Classes', href: '/member/classes', icon: Calendar },
-  { name: 'Progress', href: '/member/progress', icon: TrendingUp },
   { name: 'Payments', href: '/member/payments', icon: CreditCard },
+  { name: 'Health Status', href: '/member/health', icon: Heart },
+  { name: 'Plan', href: '/member/plan', icon: FileText },
+  { name: 'Exercise Routine', href: '/member/exercise', icon: Activity },
   { name: 'Profile', href: '/member/profile', icon: User },
-  { name: 'Settings', href: '/member/settings', icon: Settings },
 ];
 
 export default function MemberDashboard() {
@@ -114,10 +114,10 @@ export default function MemberDashboard() {
           <Routes>
             <Route index element={<MemberOverview />} />
             <Route path="profile" element={<MemberProfile />} />
-            <Route path="classes" element={<MemberClasses />} />
-            <Route path="progress" element={<MemberProgress />} />
             <Route path="payments" element={<MemberPayments />} />
-            <Route path="settings" element={<MemberSettings />} />
+            <Route path="health" element={<HealthStatus />} />
+            <Route path="plan" element={<Plan />} />
+            <Route path="exercise" element={<ExerciseRoutine />} />
           </Routes>
         </div>
       </main>
