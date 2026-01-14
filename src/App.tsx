@@ -10,7 +10,6 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ForgotPassword from "./pages/ForgotPassword";
 import AdminDashboard from "./pages/admin/Dashboard";
-import MemberDashboard from "./pages/member/Dashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,12 +35,6 @@ const App = () => (
             <Route path="/admin/*" element={
               <ProtectedRoute allowedRoles={['admin', 'staff']}>
                 <AdminDashboard />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/member/*" element={
-              <ProtectedRoute allowedRoles={['member']}>
-                <MemberDashboard />
               </ProtectedRoute>
             } />
             

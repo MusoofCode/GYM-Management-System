@@ -9,11 +9,12 @@ const Index = () => {
 
   useEffect(() => {
     if (!loading && user && userRole) {
-      // Redirect based on user role
+      // Admin-only system - redirect all authenticated users to admin panel
       if (userRole === 'admin' || userRole === 'staff' || userRole === 'trainer') {
         navigate('/admin');
-      } else if (userRole === 'member') {
-        navigate('/member');
+      } else {
+        // If user doesn't have admin/staff role, redirect to login
+        navigate('/login');
       }
     }
   }, [user, userRole, loading, navigate]);
