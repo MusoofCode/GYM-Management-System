@@ -37,37 +37,18 @@ export const AddStaffDialog = ({ open, onOpenChange, onSuccess }: AddStaffDialog
     setLoading(true);
 
     try {
-      // Create auth user
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
+      const { data, error } = await supabase.functions.invoke('admin-create-user', {
+        body: {
+          userType: formData.role,
+          email: formData.email,
+          password: formData.password,
+          fullName: formData.full_name,
+          phone: formData.phone || null,
+        },
       });
 
-      if (authError) throw authError;
-      if (!authData.user) throw new Error("Failed to create user");
-
-      // Create profile
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .insert({
-          user_id: authData.user.id,
-          email: formData.email,
-          full_name: formData.full_name,
-          phone: formData.phone,
-          status: "active",
-        });
-
-      if (profileError) throw profileError;
-
-      // Assign role
-      const { error: roleError } = await supabase
-        .from("user_roles")
-        .insert({
-          user_id: authData.user.id,
-          role: formData.role,
-        });
-
-      if (roleError) throw roleError;
+      if (error) throw error;
+      if (!data?.user_id) throw new Error('Failed to create user');
 
       // Get all admin user IDs to notify
       const { data: adminRoles } = await supabase

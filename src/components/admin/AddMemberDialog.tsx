@@ -8,7 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
 import { notifyNewMemberAdded } from '@/lib/notifications';
 import { PhotoUpload } from './PhotoUpload';
-import { uploadStudentPhoto } from '@/lib/imageCompression';
+import { compressImage } from '@/lib/imageCompression';
 
 interface AddMemberDialogProps {
   open: boolean;
@@ -36,57 +36,43 @@ export const AddMemberDialog = ({ open, onOpenChange, onSuccess }: AddMemberDial
     setLoading(true);
 
     try {
-      // Create auth user
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          data: {
-            full_name: formData.fullName,
-          },
+      const photoBase64 = await (async () => {
+        if (!photoFile) return null;
+        try {
+          const compressed = await compressImage(photoFile);
+          return await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+              const result = String(reader.result || '');
+              const base64 = result.includes(',') ? result.split(',')[1] : result;
+              resolve(base64);
+            };
+            reader.onerror = () => reject(new Error('Failed to read image'));
+            reader.readAsDataURL(compressed);
+          });
+        } catch (err) {
+          console.error('Photo compress/encode error:', err);
+          return null;
+        }
+      })();
+
+      const { data, error } = await supabase.functions.invoke('admin-create-user', {
+        body: {
+          userType: 'member',
+          email: formData.email,
+          password: formData.password,
+          fullName: formData.fullName,
+          phone: formData.phone || null,
+          dateOfBirth: formData.dateOfBirth || null,
+          address: formData.address || null,
+          emergencyContact: formData.emergencyContact || null,
+          emergencyPhone: formData.emergencyPhone || null,
+          photoBase64,
         },
       });
 
-      if (authError) throw authError;
-      if (!authData.user) throw new Error('Failed to create user');
-
-      // Upload photo if provided
-      let avatarUrl = null;
-      if (photoFile) {
-        try {
-          avatarUrl = await uploadStudentPhoto(photoFile, authData.user.id);
-        } catch (photoError) {
-          console.error('Photo upload error:', photoError);
-          // Continue without photo
-        }
-      }
-
-      // Create profile
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert({
-          user_id: authData.user.id,
-          email: formData.email,
-          full_name: formData.fullName,
-          phone: formData.phone || null,
-          date_of_birth: formData.dateOfBirth || null,
-          address: formData.address || null,
-          emergency_contact: formData.emergencyContact || null,
-          emergency_phone: formData.emergencyPhone || null,
-          avatar_url: avatarUrl,
-        });
-
-      if (profileError) throw profileError;
-
-      // Assign member role
-      const { error: roleError } = await supabase
-        .from('user_roles')
-        .insert({
-          user_id: authData.user.id,
-          role: 'member',
-        });
-
-      if (roleError) throw roleError;
+      if (error) throw error;
+      if (!data?.user_id) throw new Error('Failed to create user');
 
       // Get all admin user IDs to notify
       const { data: adminRoles } = await supabase
