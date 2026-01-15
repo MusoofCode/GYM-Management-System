@@ -71,6 +71,21 @@ export default function AdminStudents() {
 
   const fetchMembers = async () => {
     try {
+      // Students (members) must be separate from staff/trainers/admins
+      const { data: memberRoles, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'member');
+
+      if (rolesError) throw rolesError;
+
+      const memberIds = (memberRoles || []).map(r => r.user_id);
+
+      if (memberIds.length === 0) {
+        setMembers([]);
+        return;
+      }
+
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select(`
@@ -81,6 +96,7 @@ export default function AdminStudents() {
           avatar_url,
           created_at
         `)
+        .in('user_id', memberIds)
         .order('created_at', { ascending: false });
 
       if (profilesError) throw profilesError;
@@ -95,7 +111,8 @@ export default function AdminStudents() {
           end_date,
           payment_status,
           plan:membership_plans(name)
-        `);
+        `)
+        .in('user_id', memberIds);
 
       // Combine data
       const membersWithMemberships = profiles?.map(profile => ({
@@ -162,8 +179,14 @@ export default function AdminStudents() {
 
     setDeletingMember(true);
     try {
-      // Delete user from auth (this will cascade delete related records)
-      const { error } = await supabase.auth.admin.deleteUser(selectedMember.user_id);
+      // Use a secure backend function (service role) to delete the auth user.
+      // Also enforce separation: only "member" users can be deleted from Students page.
+      const { error } = await supabase.functions.invoke('admin-delete-user', {
+        body: {
+          userId: selectedMember.user_id,
+          expectedRole: 'member',
+        },
+      });
 
       if (error) throw error;
 
